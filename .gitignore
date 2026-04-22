@@ -1,0 +1,6 @@
+# Sim artefacts
+*.vcd
+*.log
+sim_build/
+__pycache__/
+.venv/
