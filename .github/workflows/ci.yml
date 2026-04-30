@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Icarus Verilog
+        run: sudo apt-get install -y iverilog
+
+      - name: Install Python packages
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pyyaml pandas matplotlib
+
+      - name: Verify Makefile
+        run: test -f Makefile
+
+      - name: Check repo structure
+        run: |
+          for d in rtl tb formal scripts sw fpga docs; do
+            if [ ! -d "$d" ]; then 
+              echo "ERROR= $d missing dir"
+              exit 1
+            fi
+          done
+
+# siumulation:
+#   runs-on: ubuntu-latest
+#   steps:
+#     - uses: actions/checkout@v4
+#     - run: make sim
+#
+# regression:
+#   runs-on: ubuntu-latest
+#   steps:
+#     - uses: actions/checkout@v4
+#     - run: make regression

@@ -1,6 +1,54 @@
 # Sim artefacts
-*.vcd
-*.log
-sim_build/
-__pycache__/
+
+# Python
 .venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Sim o/p
+*.vcd
+*.vvp
+*.fst
+
+# Qaurtus misc.
+db/
+incremental_db/
+output_files/
+*.qdb
+*.qpf.bak
+*.rpt
+*.smsg
+*.summary
+*.pin
+*.sof
+*.pof
+*.jdi
+
+# Vivado misc.
+*.runs/
+*.cache/
+*.ip_user_files
+*.hw/
+*.sim/
+*.jou
+*.log
+*.bit
+*.ltx
+xsim.dir/
+
+# MSim/Questa misc.
+*/*/symbiyosys_tmp/
+*_bmc/
+*_prove/
+*.sby.bak
+
+# Gen files/dir
+tb/common/generated
+sw/drivers/generated
+rtl/dds_lut.hex
+
+# IDE misc.
+.idea/
+.vscode/
+#
