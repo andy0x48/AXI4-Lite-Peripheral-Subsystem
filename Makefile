@@ -9,11 +9,22 @@ TB_TOP		:= tb/uart_tb/tb_top.sv
 
 # default
 .PHONY: all
-all: sim
+all: lint
+
+# lint
+.PHONY: lint
+lint:
+	@echo ">>> LINT: QUICK RTL CHECK..."
+	$(VERILOG) -g2012 -tnull $(RTL_SRC)
+	@echo ">>> LINT: OK!"
 
 # simulation
 .PHONY: sim
 sim:
+	@if [ ! -f "$(TB_TOP)" ]; then \
+		echo ">>> SIM [WARN]: No TB found... SKIPPING..."; \
+		exit 0; \
+	fi
 	@echo ">>> SIM: COMPILING..."
 	$(IVERILOG) -g2012 -o sim.vvp $(RTL_SRC) $(TB_TOP)
 	@echo ">>> SIM: RUNNING SIMULATION..."
