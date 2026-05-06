@@ -1,10 +1,11 @@
+---
 name: CI
 
-on:
+"on":
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   sanity:
@@ -13,20 +14,22 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Icarus Verilog
-        run: sudo apt-get install -y iverilog
+        run: |
+          sude apt-get update
+          sudo apt-get install -y iverilog
 
       - name: Check repo structure
         run: |
           for d in rtl tb formal scripts sw fpga docs; do
-            if [ ! -d "$d" ]; then 
-              echo "ERROR= $d missing dir"
+            if [ ! -d "$d" ]; then
+              echo "ERROR: $d missing dir"
               exit 1
             fi
           done
-          echo ">>> [ci.yml]: Structure OK!"
+          echo ">>> Structure OK!"
 
       - name: Makefile exists
-        run: test -f Makefile && echo ">>> [ci.yml]: Makefile OK!"
+        run: test -f Makefile && echo ">>> Makefile OK!"
 
       - name: Sanity check RTL
         run: make sanity
