@@ -15,7 +15,7 @@ jobs:
 
       - name: Install Icarus Verilog
         run: |
-          sude apt-get update
+          sudo apt-get update
           sudo apt-get install -y iverilog
 
       - name: Check repo structure
