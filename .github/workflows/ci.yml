@@ -15,14 +15,6 @@ jobs:
       - name: Install Icarus Verilog
         run: sudo apt-get install -y iverilog
 
-      - name: Install Python packages
-        run: |
-          python3 -m pip install --upgrade pip
-          pip install pyyaml pandas matplotlib
-
-      - name: Verify Makefile
-        run: test -f Makefile
-
       - name: Check repo structure
         run: |
           for d in rtl tb formal scripts sw fpga docs; do
@@ -31,15 +23,35 @@ jobs:
               exit 1
             fi
           done
+          echo ">>> [ci.yml]: Structure OK!"
 
-# siumulation:
-#   runs-on: ubuntu-latest
-#   steps:
-#     - uses: actions/checkout@v4
-#     - run: make sim
-#
-# regression:
-#   runs-on: ubuntu-latest
-#   steps:
-#     - uses: actions/checkout@v4
-#     - run: make regression
+      - name: Makefile exists
+        run: test -f Makefile && echo ">>> [ci.yml]: Makefile OK!"
+
+      - name: Sanity check RTL
+        run: make sanity
+
+        # --- TODO Stage 1 completion ---
+  # sim_uart:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: sudo apt-get install -y iverilog
+  #     - run: make sim_uart
+
+        # --- TODO at Stage 4 ---
+  # reggen:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: pip install pyyaml pandas matplotlib
+  #     - run: make reggen
+
+        # --- TODO at Stage 6 ---
+  # regression:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: sudo apt-get install -y iverilog
+  #     - run: pip install pyyaml pandas matplotlib
+  #     - run: make regression
