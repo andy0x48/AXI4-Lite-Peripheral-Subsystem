@@ -25,7 +25,7 @@ interface axi4_lite_if #(
     logic [DATA_W/8-1:0]    wstrb;      // 32-bit; byte en.
     logic                   wvalid;
     logic                   wready;
-
+    
     // write resp channel
     logic [1:0]     bresp;
     logic           bvalid;
