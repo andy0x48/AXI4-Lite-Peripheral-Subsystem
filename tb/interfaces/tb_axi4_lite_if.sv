@@ -5,7 +5,7 @@
 `define TB_AXI4_LITE_IF_SV
 
 interface tb_axi4_lite_if #(
-    parameter int ADDR_W = 32
+    parameter int ADDR_W = 32,
     parameter int DATA_W = 32
 )(
     input logic clk,
