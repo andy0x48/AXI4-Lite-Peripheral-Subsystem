@@ -16,7 +16,10 @@ db/
 incremental_db/
 output_files/
 *.qdb
-*.qpf.bak
+*.qpf
+*.qpf.*
+*.qsf
+*.qws
 *.rpt
 *.smsg
 *.summary
@@ -51,4 +54,5 @@ rtl/dds_lut.hex
 # IDE misc.
 .idea/
 .vscode/
+
 #
