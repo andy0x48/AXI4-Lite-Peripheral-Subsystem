@@ -46,7 +46,6 @@ module uart_core #(
     logic           txf_rd_en;
     logic           txf_empty;
     logic           txf_full;
-    // logic [$clog2(8):0] tx_count; // TODO not used
 
     sync_fifo #(.WIDTH(8), .DEPTH(8)) tx_fifo (
         .clk(clk), .rst_n(rst_n),
@@ -64,7 +63,6 @@ module uart_core #(
     logic           rxf_wr_en;
     logic           rxf_empty;
     logic           rxf_full;
-    // logic [$clog2(8):0] rx_count; // TODO not used
 
     sync_fifo #(.WIDTH(8), .DEPTH(8)) rx_fifo (
         .clk(clk), .rst_n(rst_n),
@@ -126,7 +124,6 @@ module uart_core #(
     tx_state_t      tx_state, tx_next;
     logic [2:0]     tx_bit_cnt;
     logic [7:0]     tx_shift;
-    logic           tx_done;        // high @ 1 baud tick when stop bit finished
 
     always_comb begin
         tx_next = tx_state;
@@ -135,6 +132,7 @@ module uart_core #(
             TX_START:   if (baud_tick) tx_next = TX_DATA;
             TX_DATA:    if (baud_tick && tx_bit_cnt == 3'd7) tx_next = TX_STOP;
             TX_STOP:    if (baud_tick) tx_next = TX_IDLE;
+            default:    tx_next = TX_IDLE;
         endcase
     end
 
@@ -144,12 +142,10 @@ module uart_core #(
             tx          <= 1'b1;
             tx_bit_cnt  <= '0;
             tx_shift    <= '0;
-            tx_done     <= 1'b0;
             txf_rd_en   <= 1'b0;
         end 
         else begin
             tx_state <= tx_next;
-            tx_done <= 1'b0;
             txf_rd_en <= 1'b0;
 
             case (tx_state)
@@ -183,8 +179,11 @@ module uart_core #(
                 TX_STOP: begin
                     if (baud_tick) begin
                         tx <= 1'b1;
-                        tx_done <= 1'b1;
                     end
+                end
+                default: begin
+                    tx_state <= TX_IDLE;
+                    tx <= 1'b1;
                 end
             endcase
         end
