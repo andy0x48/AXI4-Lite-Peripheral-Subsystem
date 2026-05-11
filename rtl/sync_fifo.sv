@@ -22,30 +22,35 @@ module sync_fifo #(
 );
 
     localparam int ADDR_W = $clog2(DEPTH);
+    localparam logic [ADDR_W:0] DEPTH_VAL = (ADDR_W+1)'(DEPTH);
+
     logic [WIDTH-1:0]       mem [DEPTH];
     logic [ADDR_W:0]        wr_ptr, rd_ptr;
-    logic [ADDR_W:0]        entries;
 
+    // Write ptr
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             wr_ptr <= '0;
+        end 
+        else if (wr_en && !full) begin
+            mem[wr_ptr[ADDR_W-1:0]] <= wr_data;
+            wr_ptr <= wr_ptr + 1'b1;
+        end 
+    end
+
+    // Read ptr
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
             rd_ptr <= '0;
         end 
-        else begin 
-            if (wr_en && !full) begin
-                mem[wr_ptr[ADDR_W-1:0]] <= wr_data;
-                wr_ptr = wr_ptr + 1'b1;
-            end
-            if (rd_en && !empty) begin
-                rd_ptr <= rd_ptr + 1'b1;
-            end
+        else if (rd_en && !empty) begin
+            rd_ptr <= rd_ptr + 1'b1;
         end 
     end
 
     assign rd_data = mem[rd_ptr[ADDR_W-1:0]];
-    assign entries = wr_ptr - rd_ptr;
-    assign full = (entries == DEPTH);
-    assign empty = (entries == 0);
-    assign count = entries;
+    assign count = wr_ptr - rd_ptr;
+    assign full = (count == DEPTH_VAL);
+    assign empty = (count == '0);
 
-endmodule
+endmodule : sync_fifo

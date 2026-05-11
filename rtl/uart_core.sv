@@ -46,7 +46,7 @@ module uart_core #(
     logic           txf_rd_en;
     logic           txf_empty;
     logic           txf_full;
-    logic [$clog2(8):0] tx_count;
+    // logic [$clog2(8):0] tx_count; // TODO not used
 
     sync_fifo #(.WIDTH(8), .DEPTH(8)) tx_fifo (
         .clk(clk), .rst_n(rst_n),
@@ -56,7 +56,7 @@ module uart_core #(
         .rd_en(txf_rd_en),
         .rd_data(txf_rd_data),
         .empty(txf_empty),
-        .count(tx_count)
+        .count()
     );
 
     // Rx FIFO inst.
@@ -64,7 +64,7 @@ module uart_core #(
     logic           rxf_wr_en;
     logic           rxf_empty;
     logic           rxf_full;
-    logic [$clog2(8):0] rx_count;
+    // logic [$clog2(8):0] rx_count; // TODO not used
 
     sync_fifo #(.WIDTH(8), .DEPTH(8)) rx_fifo (
         .clk(clk), .rst_n(rst_n),
@@ -74,7 +74,7 @@ module uart_core #(
         .rd_en(rd_en),
         .rd_data(rd_data),
         .empty(rxf_empty),
-        .count(rx_count)
+        .count()
     );
 
     assign tx_full = txf_full;
@@ -157,13 +157,15 @@ module uart_core #(
                     tx <= 1'b1;
                     if (tx_next == TX_START) begin
                         txf_rd_en <= 1'b1;      // pop byte on next cycle; load @ start
+                        tx <= 1'b0;
                     end
                 end
                 TX_START: begin
+                    tx <= 1'b0;
                     if (baud_tick) begin
-                        tx <= 1'b0;
                         tx_shift <= txf_rd_data;    // load shift reg; FIFO data
                         tx_bit_cnt <= '0;
+                        tx <= txf_rd_data[0];
                     end
                 end
                 TX_DATA: begin
@@ -205,6 +207,7 @@ module uart_core #(
             RX_IDLE:    if (!rx_sync2) rx_next = RX_DATA;     // Assumes start bit detected @ 0
             RX_DATA:    if (sample_cnt == 4'd15 && baud_tick_16x && rx_bit_cnt == 3'd7) rx_next = RX_STOP;
             RX_STOP:    if (sample_cnt == 4'd15 && baud_tick_16x) rx_next = RX_IDLE;
+            default:    rx_next = RX_IDLE;
         endcase
     end
 
@@ -266,8 +269,9 @@ module uart_core #(
                     end
                     
                 end
+                default: rx_state <= RX_IDLE;
             endcase
         end
     end
 
-endmodule
+endmodule : uart_core
