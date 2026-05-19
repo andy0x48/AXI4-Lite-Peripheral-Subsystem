@@ -6,7 +6,7 @@ VVP		:= vvp
 SBY		:= sby
 
 IFLAGS	:= -g2012 -Wall
-VFLAGS	:= --lint-only -Wall -Wno-UNUSEDSIGNAL
+VFLAGS	:= --lint-only -Wall -Wno-UNUSEDSIGNAL -Wno-PINCONNECTEMPTY
 
 # include path
 INCL	:= -Irtl -Itb/common -Itb/interfaces
