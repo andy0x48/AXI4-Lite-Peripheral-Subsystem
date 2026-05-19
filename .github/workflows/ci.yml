@@ -8,15 +8,16 @@ name: CI
     branches: [main]
 
 jobs:
-  sanity:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Icarus Verilog
+      - name: Install Verilator
         run: |
-          sudo apt-get update
-          sudo apt-get install -y iverilog
+          sudo apt-get update -qq
+          sudo apt-get install -y verilator
+          verilator --version
 
       - name: Check repo structure
         run: |
@@ -32,18 +33,18 @@ jobs:
       - name: Makefile exists
         run: test -f Makefile && echo ">>> Makefile OK!"
 
-      - name: Sanity check RTL
-        run: make sanity
+      - name: Lint Check RTL
+        run: make lint
 
-        # --- TODO Stage 1 completion ---
+  # --- TODO Stage 1 completion ---
   # sim_uart:
   #   runs-on: ubuntu-latest
   #   steps:
   #     - uses: actions/checkout@v4
   #     - run: sudo apt-get install -y iverilog
-  #     - run: make sim_uart
+  #     - run: make sim TEST=uart
 
-        # --- TODO at Stage 4 ---
+  # --- TODO at Stage 4 ---
   # reggen:
   #   runs-on: ubuntu-latest
   #   steps:
@@ -51,11 +52,19 @@ jobs:
   #     - run: pip install pyyaml pandas matplotlib
   #     - run: make reggen
 
-        # --- TODO at Stage 6 ---
+  # --- TODO at Stage 6 ---
   # regression:
   #   runs-on: ubuntu-latest
   #   steps:
   #     - uses: actions/checkout@v4
-  #     - run: sudo apt-get install -y iverilog
+  #     - run: sudo apt-get install -y verilator iverilog
   #     - run: pip install pyyaml pandas matplotlib
   #     - run: make regression
+  
+  # --- TODO at Stage 7 ---
+  # formal:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: pip install symbiyosys
+  #     - run: make formal

@@ -1,10 +1,12 @@
 # tooling
-VENV 	:= .venv/bin/python3
+VENV 	:= source .venv/bin/activate &&
 VERL	:= verilator
 IV 		:= iverilog
-FLAGS	:= -g2012 -Wall
 VVP		:= vvp
 SBY		:= sby
+
+IFLAGS	:= -g2012 -Wall
+VFLAGS	:= --lint-only -Wall -Wno-UNUSEDSIGNAL
 
 # include path
 INCL	:= -Irtl -Itb/common -Itb/interfaces
@@ -13,21 +15,21 @@ INCL	:= -Irtl -Itb/common -Itb/interfaces
 WORK	:= work
 SIM		:= $(WORK)/sim.vvp
 
-# sources
+# rtl sources
 RTL			:= $(wildcard rtl/*.sv)
 TOP			:= axi_periph_top
 
-# testbench path
+# testbench sources
 TB_COMMON	:= $(wildcard tb/common/*.sv)
 TB_IF		:= $(wildcard tb/interfaces/*.sv)
 TB_UVM		:= $(wildcard tb/uvm/*.sv)
 
 # select directed
-TEST 		?= uart
+TEST 		?= uart			# default
 TB_DIRECT	= tb/$(TEST)_tb/tb_$(TEST)_directed.sv
 
-# sanity source set (icarus only)
-SANITY_SET	= $(RTL) $(TB_COMMON) $(TB_DIRECT)
+# sim source set (icarus safe)
+SIM_SET	= $(RTL) $(TB_COMMON) $(TB_DIRECT)
 
 # full source set (verilator)
 FULL_SET 	= $(RTL) $(TB_COMMON) $(TB_IF) $(TB_DIRECT)
@@ -44,32 +46,31 @@ FULL_SET 	= $(RTL) $(TB_COMMON) $(TB_IF) $(TB_DIRECT)
 
 # default
 .PHONY: all
-all: sanity
+all: lint
 
-# sanity check (fast)
+# sanity check (local only)
 .PHONY: sanity
 sanity:
 	@echo ">>> SANITY: Syntax check (Icarus)..."
-	@$(IV) $(FLAGS) $(INCL) -tnull $(SANITY_SET)
+	@$(IV) $(IFLAGS) $(INCL) -tnull $(RTL)
 	@echo ">>> SANITY: OK!"
 
 
 # strict check
 .PHONY: lint
 lint:
-	@echo ">>> LINT: RTL strict lint check (Verilator)..."
-	@$(VERL) --lint-only \
-		-Wall \
+	@echo ">>> LINT: RTL Verilator ($(TOP))..."
+	@$(VERL) $(VFLAGS) $(INCL) \
 		--top-module $(TOP) \
 		$(RTL)
 	@echo ">>> LINT: OK!"
 
 # build simulation
-$(SIM): $(SANITY_SET)
+$(SIM): $(SIM_SET)
 	@mkdir -p $(WORK)
 	@echo ">>> SIM: Compiling ($(TEST))..."
 	$(IV) $(FLAGS) $(INCL) -o $(SIM) \
-		$(SANITY_SET)
+		$(SIM_SET)
 
 # run simulation
 .PHONY: sim
@@ -80,36 +81,35 @@ sim: $(SIM)
 # formal verif
 # .PHONY: formal
 # formal:
-# 	@if [ -z "$(SBY) "]; then \
-# 		echo ">>> FORMAL [WARN]: No .sby source(s) found; skipping!"; \
-# 		exit 0; 
-# 	fi
-# 	@for f in $(SBY); do \
-# 		echo ">>> FORMAL: $$f"; \
-# 		$(SBY) -f $$f; \
+# 	@echo ">>> FORMAL: Running SymbiYosys..."
+# 	@for f in formal/*.sby; do \
+# 		echo "	>> $$f"; \
+# 		$(SBY) -f $$f || exit 1; \
 # 	done
+# 	@echo ">>> FORMAL: OK!"
 
 # script: register generation
+# REGS_YAML	:= scripts/reggen/regs.yaml
+# REG_SV_OUT	:= tb/uart/generated/periph_regs.h
+# REG_H_OUT	:= sw/drivers/generated/periph_regs.h
+#
 # .PHONY: reggen
-# reggen:
-# 	@if [ ! -f "scripts/reggen/regs.yaml" ]; then \
-# 		echo ">>> REGGEN [WARN]: missing regs.yaml; skipping!"; \
-# 		exit 0; \
-# 	fi
-# 	@echo ">>> REGGEN: Running..."
-# 	@$(VENV) scripts/reggen/gen_ral.py
-# 	@$(VENV) scripts/reggen/gen_c_header.py
-# 	@$(VENV) scripts/reggen/gen_sine_lut.py
+# reggen: $(REG_SV_OUT) $(REG_H_OUT)
+#
+# $(REG_SV_OUT) $(REG_H_OUT): $(REGS_YAML)
+# 	@echo ">>> REGGEN: Generating from $(REGS_YAML)..."
+# 	@mkdir -p sw/drivers/generated
+# 	@$(VENV) python3 scripts/reggen/gen_ral.py
+# 	@$(VENV) python3 scripts/reggen/gen_c_header.py
+# 	@$(VENV) python3 scripts/reggen/gen_sine_lut.py
+# 	@echo ">>> REGGEN: OK!"
 
 # regression
-# .PHONY: regression
-# regression:
-# 	@if [ ! -f "scripts/mutagen/run_mutagen.py" ]; then \
-# 		@echo ">>> REGRESSION [WARN]: Not ready for staging; skipping!"; \
-# 		exit 0; \
-# 	fi
-# 	@echo ">>> REGRESSION: Running..."
-# 	$(VENV) scripts/mutagen/run_mutagen.py
+.PHONY: regression
+regression:
+	@echo ">>> REGRESSION: Running..."
+	$(VENV) python3 scripts/regression/regression.py --sim icarus
+	@echo ">>> REGRESSION: OK!"
 
 # cleanup
 .PHONY: clean

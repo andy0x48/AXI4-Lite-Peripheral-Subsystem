@@ -47,6 +47,7 @@ xsim.dir/
 *.sby.bak
 
 # Gen files/dir
+misc
 tb/common/generated
 sw/drivers/generated
 rtl/dds_lut.hex
