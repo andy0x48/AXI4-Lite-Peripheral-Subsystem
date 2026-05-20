@@ -107,8 +107,8 @@ module axi_uart_wrapper #(
             s_bvalid        <= 1'b0;
             s_bresp         <= OKAY;
             wr_addr_latch   <= '0;
-            wr_addr_latch   <= '0;
-            wr_addr_latch   <= OKAY;
+            wr_data_latch   <= '0;
+            wr_resp_latch   <= OKAY;
             wr_en           <= 1'b0;
         end
         else begin
@@ -189,6 +189,8 @@ module axi_uart_wrapper #(
                         wr_state <= WR_IDLE;
                     end
                 end
+
+                default: wr_state <= WR_IDLE;
             endcase
         end
     end
@@ -262,6 +264,8 @@ module axi_uart_wrapper #(
                         rd_state <= RD_IDLE;
                     end
                 end
+
+                default: rd_state <= RD_IDLE;
             endcase
         end
     end
